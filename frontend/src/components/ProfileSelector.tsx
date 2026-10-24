@@ -1,6 +1,6 @@
 import React from 'react';
-import { MobilityProfile } from '../types';
-import { Accessibility, Footprints, Baby, User } from 'lucide-react';
+import type { MobilityProfile } from '../types';
+import { Accessibility, Footprints, Baby, Compass, Check } from 'lucide-react';
 
 interface ProfileSelectorProps {
   selectedProfile: MobilityProfile;
@@ -11,44 +11,44 @@ interface ProfileSelectorProps {
 interface ProfileOption {
   id: MobilityProfile;
   label: string;
-  tag: string;
+  badge: string;
   icon: React.ReactNode;
-  description: string;
-  constraints: string;
+  specs: string;
+  ruleExplanation: string;
 }
 
 const PROFILES: ProfileOption[] = [
   {
     id: 'wheelchair',
-    label: 'Wheelchair / Powerchair',
-    tag: 'Strict ADA & Zero Stairs',
-    icon: <Accessibility className="w-5 h-5" />,
-    description: 'Requires curb cuts, smooth pavement, max 8.3% ramp slope, zero stairs, min 0.9m width.',
-    constraints: 'Excludes: Stairs, missing curb cuts, slopes >8%, construction bottlenecks.'
+    label: 'Wheelchair & Powerchair',
+    badge: 'Strict ADA Standard',
+    icon: <Accessibility className="w-4 h-4" />,
+    specs: 'Max grade 8.3% • Clear width ≥0.9m • Zero steps',
+    ruleExplanation: 'Strictly excludes flights of stairs, missing dropped curb ramps, steep street inclines (>8%), and construction bottlenecks.'
   },
   {
     id: 'walker_cane',
-    label: 'Walker / Cane / Crutches',
-    tag: 'Low Step & Fall Prevention',
-    icon: <Footprints className="w-5 h-5" />,
-    description: 'Avoids multi-step flights, loose gravel, and steep grades (>10%). Prioritizes handrails.',
-    constraints: 'Excludes: >3 steps, severe slopes, heavy cobblestone surfaces.'
+    label: 'Walking Aid / Cane / Crutches',
+    badge: 'Low-Step & Stability',
+    icon: <Footprints className="w-4 h-4" />,
+    specs: 'Max 3 steps • Fall hazard avoidance • Railing priority',
+    ruleExplanation: 'Filters out tall staircases (>3 risers), high-vibration cobblestone, and steep slopes (>10%) to minimize trip and fatigue risks.'
   },
   {
     id: 'stroller_elderly',
     label: 'Stroller & Senior Transit',
-    tag: 'Gentle Gradients & Benches',
-    icon: <Baby className="w-5 h-5" />,
-    description: 'Paved level pathways with rest zones, avoiding stairs and heavy detours.',
-    constraints: 'Excludes: Flights of stairs without ramps, steep hills (>12%).'
+    badge: 'Gentle Gradients',
+    icon: <Baby className="w-4 h-4" />,
+    specs: 'Paved smooth paths • Gentle slopes (<6%) • Rest benches',
+    ruleExplanation: 'Prioritizes level asphalt and concrete walkways, avoids unramped stairs, and identifies resting corridors.'
   },
   {
     id: 'standard',
     label: 'Standard Pedestrian',
-    tag: 'Minimum Distance Baseline',
-    icon: <User className="w-5 h-5" />,
-    description: 'Navigates stairs, curbs, and variable terrain with standard 1.35 m/s walking speed.',
-    constraints: 'Unconstrained distance routing (used as direct baseline).'
+    badge: 'Distance Baseline',
+    icon: <Compass className="w-4 h-4" />,
+    specs: 'Unconstrained distance routing • Average 1.35 m/s',
+    ruleExplanation: 'Calculates the direct distance shortest path without accessibility filtering. Used as comparative benchmark.'
   }
 ];
 
@@ -59,9 +59,15 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
 }) => {
   return (
     <div className="space-y-2">
-      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
-        Mobility & Accessibility Profile
-      </label>
+      <div className="flex items-center justify-between">
+        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          Mobility & Accessibility Profile
+        </label>
+        <span className="text-[10px] text-teal-400 font-semibold">
+          Multi-criteria Dijkstra Cost Function
+        </span>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {PROFILES.map((p) => {
           const isSelected = selectedProfile === p.id;
@@ -71,32 +77,46 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
               type="button"
               disabled={disabled}
               onClick={() => onSelectProfile(p.id)}
-              className={`text-left p-3 rounded-xl border transition-all relative flex flex-col justify-between ${
+              className={`text-left p-3 rounded-xl border transition-all relative flex flex-col justify-between cursor-pointer ${
                 isSelected
-                  ? 'border-blue-600 bg-blue-50/70 shadow-sm ring-1 ring-blue-500'
-                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
-              } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  ? 'border-teal-500 bg-teal-950/30 text-white shadow-sm ring-1 ring-teal-500/50'
+                  : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-700 hover:bg-slate-900/90'
+              } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center space-x-2">
-                  <div
-                    className={`p-1.5 rounded-lg ${
-                      isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'
-                    }`}
-                  >
-                    {p.icon}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        isSelected
+                          ? 'bg-teal-500 text-slate-950 font-bold'
+                          : 'bg-slate-800 text-slate-400'
+                      }`}
+                    >
+                      {p.icon}
+                    </div>
+                    <span className="font-bold text-xs text-white tracking-tight">
+                      {p.label}
+                    </span>
                   </div>
-                  <span className="font-semibold text-sm text-slate-900">{p.label}</span>
+
+                  {isSelected && (
+                    <div className="w-4 h-4 rounded-full bg-teal-500 text-slate-950 flex items-center justify-center">
+                      <Check className="w-2.5 h-2.5 stroke-[3]" />
+                    </div>
+                  )}
                 </div>
-                <span
-                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                    isSelected ? 'bg-blue-200 text-blue-800' : 'bg-slate-100 text-slate-600'
-                  }`}
-                >
-                  {p.tag}
+
+                <p className="text-[11px] font-medium text-slate-400 mt-1">
+                  {p.specs}
+                </p>
+              </div>
+
+              <div className="mt-2 pt-1.5 border-t border-slate-800/80">
+                <span className="text-[10px] text-slate-400 line-clamp-1">
+                  {p.ruleExplanation}
                 </span>
               </div>
-              <p className="text-xs text-slate-600 mt-1 line-clamp-2">{p.description}</p>
             </button>
           );
         })}

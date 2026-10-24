@@ -6,7 +6,11 @@ import {
   Sparkles,
   Users,
   CheckCircle,
-  PlusCircle
+  PlusCircle,
+  Search,
+  Filter,
+  MapPin,
+  AlertOctagon
 } from 'lucide-react';
 
 interface BarrierListProps {
@@ -23,153 +27,198 @@ export const BarrierList: React.FC<BarrierListProps> = ({
   onOpenReportModal
 }) => {
   const [filter, setFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const filteredBarriers = barriers.filter((b) => {
-    if (filter === 'all') return true;
-    return b.verification_status === filter;
+    const matchesFilter = filter === 'all' || b.verification_status === filter;
+    const matchesSearch =
+      b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.category.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesFilter && matchesSearch;
   });
 
   const getStatusBadge = (status: VerificationStatus) => {
     switch (status) {
       case 'verified_barrier':
         return (
-          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
-            <ShieldCheck className="w-3 h-3 text-rose-600" />
+          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+            <ShieldCheck className="w-3 h-3 text-rose-400" />
             <span>Verified Barrier</span>
           </span>
         );
       case 'ai_suggested':
         return (
-          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-800 border border-purple-300">
-            <Sparkles className="w-3 h-3 text-purple-600" />
+          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+            <Sparkles className="w-3 h-3 text-indigo-400" />
             <span>AI Suggested (Unverified)</span>
           </span>
         );
       case 'resolved':
         return (
-          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-            <CheckCircle className="w-3 h-3 text-emerald-600" />
-            <span>Resolved / Repaired</span>
+          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/20 text-teal-300 border border-teal-500/40">
+            <CheckCircle className="w-3 h-3 text-teal-400" />
+            <span>Remediated</span>
           </span>
         );
       case 'community_reported':
       default:
         return (
-          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-            <Users className="w-3 h-3 text-amber-600" />
-            <span>Community Reported</span>
+          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+            <Users className="w-3 h-3 text-amber-400" />
+            <span>Community Audit</span>
           </span>
         );
     }
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+    <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-6 shadow-xl text-white space-y-5">
       {/* Header and Report Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-rose-600">
-            Community & Municipal Registry
-          </span>
-          <h3 className="text-base font-bold text-slate-900">
-            Accessibility Barrier Intelligence ({barriers.length})
-          </h3>
-          <p className="text-xs text-slate-500">
-            Crowdsourced reports, municipal audits, and AI-suggested sidewalk inspections.
+          <div className="flex items-center space-x-2">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-rose-400">
+              Civic Infrastructure Audit
+            </span>
+            <span className="px-2 py-0.2 rounded-md bg-slate-800 text-[10px] font-mono text-slate-300">
+              Total: {barriers.length}
+            </span>
+          </div>
+          <h2 className="text-lg font-bold text-white mt-0.5">
+            Pedestrian Barrier Intelligence Registry
+          </h2>
+          <p className="text-xs text-slate-400">
+            Crowdsourced audits, municipal physical inspections, and AI-assisted sidewalk scans.
           </p>
         </div>
 
         <button
           onClick={onOpenReportModal}
-          className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
+          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold text-xs tracking-wide shadow-md shadow-rose-900/30 transition-all flex items-center justify-center space-x-1.5 cursor-pointer active:scale-98 self-start sm:self-auto"
         >
           <PlusCircle className="w-4 h-4" />
-          <span>Report New Barrier</span>
+          <span>Report Physical Barrier</span>
         </button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-1.5 pb-2">
-        {[
-          { id: 'all', label: 'All Reports' },
-          { id: 'verified_barrier', label: 'Verified Barriers' },
-          { id: 'community_reported', label: 'Community Reported' },
-          { id: 'ai_suggested', label: 'AI Suggested' },
-          { id: 'resolved', label: 'Resolved' }
-        ].map((f) => (
-          <button
-            key={f.id}
-            onClick={() => setFilter(f.id)}
-            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              filter === f.id
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        {/* Search */}
+        <div className="relative flex-1">
+          <input
+            type="text"
+            placeholder="Search barriers by title, category, or location..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all"
+          />
+          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5 pointer-events-none" />
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex flex-wrap gap-1.5">
+          {[
+            { id: 'all', label: 'All' },
+            { id: 'verified_barrier', label: 'Verified' },
+            { id: 'community_reported', label: 'Community' },
+            { id: 'ai_suggested', label: 'AI Suggested' },
+            { id: 'resolved', label: 'Resolved' }
+          ].map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setFilter(f.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all cursor-pointer ${
+                filter === f.id
+                  ? 'bg-teal-500 text-slate-950 font-bold shadow-xs'
+                  : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* List */}
-      <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+      {/* Barrier Cards List */}
+      <div className="space-y-3 max-h-[560px] overflow-y-auto pr-1">
         {filteredBarriers.length === 0 ? (
-          <div className="text-center py-8 text-slate-400 text-xs">
-            No barrier reports match this filter.
+          <div className="text-center py-12 text-slate-500 text-xs border border-dashed border-slate-800 rounded-xl">
+            No barrier reports match this filter criteria.
           </div>
         ) : (
           filteredBarriers.map((barrier) => (
             <div
               key={barrier.id}
-              className="p-4 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-slate-300 transition-all space-y-2.5"
+              className="p-4 rounded-xl border border-slate-800 bg-slate-950/70 hover:bg-slate-950 hover:border-slate-700 transition-all space-y-2.5 card-hover-lift"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="font-bold text-sm text-slate-900">{barrier.title}</span>
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-bold text-sm text-white tracking-tight">
+                      {barrier.title}
+                    </span>
                     {getStatusBadge(barrier.verification_status)}
                   </div>
-                  <span className="text-[11px] text-slate-500 capitalize">
-                    Category: {barrier.category.replace(/_/g, ' ')} • Severity:{' '}
-                    <span className="font-semibold text-rose-600">{barrier.severity}</span>
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                    <span className="capitalize text-slate-300">
+                      Category: <strong>{barrier.category.replace(/_/g, ' ')}</strong>
+                    </span>
+                    <span>•</span>
+                    <span>
+                      Severity:{' '}
+                      <strong
+                        className={
+                          barrier.severity === 'blocking'
+                            ? 'text-rose-400'
+                            : barrier.severity === 'high'
+                            ? 'text-orange-400'
+                            : 'text-amber-400'
+                        }
+                      >
+                        {barrier.severity.toUpperCase()}
+                      </strong>
+                    </span>
+                  </div>
                 </div>
 
-                {/* Upvote Button */}
+                {/* Upvote button with refined microinteraction */}
                 <button
                   onClick={() => onUpvote(barrier.id)}
-                  className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-semibold text-xs flex items-center space-x-1 shadow-xs transition-all cursor-pointer"
-                  title="Upvote this barrier report"
+                  className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-teal-500 hover:bg-teal-950/30 text-slate-300 hover:text-teal-300 font-bold text-xs flex items-center space-x-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
+                  title="Validate this community report"
                 >
-                  <ThumbsUp className="w-3.5 h-3.5" />
-                  <span>{barrier.upvotes}</span>
+                  <ThumbsUp className="w-3.5 h-3.5 text-teal-400" />
+                  <span className="tabular-nums">{barrier.upvotes}</span>
                 </button>
               </div>
 
-              <p className="text-xs text-slate-700 leading-relaxed">{barrier.description}</p>
+              <p className="text-xs text-slate-300 leading-relaxed">{barrier.description}</p>
 
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-                <span>
-                  Location: {barrier.lat.toFixed(4)}, {barrier.lng.toFixed(4)} • Source:{' '}
-                  <span className="font-medium text-slate-700">{barrier.source}</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-900 text-[11px] text-slate-500">
+                <span className="flex items-center space-x-1">
+                  <MapPin className="w-3 h-3 text-slate-500" />
+                  <span>
+                    GPS: {barrier.lat.toFixed(4)}, {barrier.lng.toFixed(4)} • Source:{' '}
+                    <strong className="text-slate-400">{barrier.source}</strong>
+                  </span>
                 </span>
 
-                {/* Action buttons to verify or resolve */}
-                <div className="flex space-x-2">
+                <div className="flex space-x-3 text-xs">
                   {barrier.verification_status !== 'verified_barrier' && (
                     <button
                       onClick={() => onUpdateStatus(barrier.id, 'verified_barrier')}
-                      className="text-xs font-semibold text-rose-700 hover:underline cursor-pointer"
+                      className="font-semibold text-rose-400 hover:text-rose-300 hover:underline cursor-pointer"
                     >
-                      Verify Barrier
+                      Verify as Official Barrier
                     </button>
                   )}
                   {barrier.verification_status !== 'resolved' && (
                     <button
                       onClick={() => onUpdateStatus(barrier.id, 'resolved')}
-                      className="text-xs font-semibold text-emerald-700 hover:underline cursor-pointer"
+                      className="font-semibold text-teal-400 hover:text-teal-300 hover:underline cursor-pointer"
                     >
-                      Mark Resolved
+                      Mark Remediated
                     </button>
                   )}
                 </div>
