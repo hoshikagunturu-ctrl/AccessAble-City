@@ -2,9 +2,11 @@ import pytest
 from backend.app.models.routing import MobilityProfile, AccessibilityStatus
 from backend.app.routing_engine import AccessibilityRoutingEngine
 
+
 @pytest.fixture
 def engine():
     return AccessibilityRoutingEngine()
+
 
 def test_shortest_route_uses_inaccessible_stairs(engine):
     """
@@ -25,12 +27,15 @@ def test_shortest_route_uses_inaccessible_stairs(engine):
     assert any("grand_stairs" in eid for eid in edge_ids)
     assert shortest.total_distance_m < 350.0  # around 250m - 335m
 
+
 def test_wheelchair_route_strictly_excludes_inaccessible_stairs(engine):
     """
     Proves that the wheelchair-compatible route excludes the designated inaccessible
     staircase while remaining a continuous, valid path via the accessible switchback ramp.
     """
-    accessible = engine.calculate_accessible_route("node_transit_hub", "node_library", MobilityProfile.WHEELCHAIR)
+    accessible = engine.calculate_accessible_route(
+        "node_transit_hub", "node_library", MobilityProfile.WHEELCHAIR
+    )
     assert accessible is not None
     assert accessible.is_valid is True
 
@@ -52,11 +57,14 @@ def test_wheelchair_route_strictly_excludes_inaccessible_stairs(engine):
         assert seg.slope <= 8.0 or seg.ramps is True
         assert seg.width >= 0.9
 
+
 def test_route_comparison_difference_and_explanations(engine):
     """
     Verify side-by-side comparison generates accurate distance deltas and explanations.
     """
-    comp = engine.compare_routes("node_transit_hub", "node_library", MobilityProfile.WHEELCHAIR)
+    comp = engine.compare_routes(
+        "node_transit_hub", "node_library", MobilityProfile.WHEELCHAIR
+    )
     assert comp.shortest_route is not None
     assert comp.accessible_route is not None
     assert comp.comparison is not None
@@ -65,7 +73,11 @@ def test_route_comparison_difference_and_explanations(engine):
     assert comp.comparison.distance_delta_m > 0
     assert len(comp.comparison.barriers_avoided) > 0
     assert "stairs" in comp.comparison.barriers_avoided[0].lower()
-    assert "Grand Stairs" in comp.comparison.why_accessible_chosen or "barriers" in comp.comparison.why_accessible_chosen
+    assert (
+        "Grand Stairs" in comp.comparison.why_accessible_chosen
+        or "barriers" in comp.comparison.why_accessible_chosen
+    )
+
 
 def test_unknown_path_penalized(engine):
     """
@@ -75,10 +87,13 @@ def test_unknown_path_penalized(engine):
     edge_unknown = engine.edges_dict["edge_transit_to_historic_alley"]
     edge_accessible = engine.edges_dict["edge_transit_to_plaza"]
 
-    weight_unknown = engine._calculate_edge_weight(edge_unknown.model_dump(), MobilityProfile.WHEELCHAIR)
+    weight_unknown = engine._calculate_edge_weight(
+        edge_unknown.model_dump(), MobilityProfile.WHEELCHAIR
+    )
     # The weight of unknown path should be multiplied by caution factor (1.6) and cobblestone factor (1.8)
     expected_multiplier = 1.6 * 1.8
     assert weight_unknown >= edge_unknown.distance * expected_multiplier * 0.95
+
 
 def test_no_valid_route_handling(engine):
     """
@@ -86,5 +101,25 @@ def test_no_valid_route_handling(engine):
     """
     # Create isolated engine with no connections
     isolated_engine = AccessibilityRoutingEngine(nodes=[], edges=[])
-    res = isolated_engine.calculate_accessible_route("invalid_a", "invalid_b", MobilityProfile.WHEELCHAIR)
+    res = isolated_engine.calculate_accessible_route(
+        "invalid_a", "invalid_b", MobilityProfile.WHEELCHAIR
+    )
     assert res is None
+
+
+def test_accessible_route_starts_and_ends_at_requested_nodes(engine):
+    """
+    Verify that an accessible route begins and ends at the requested locations.
+    """
+    source = "node_transit_hub"
+    destination = "node_library"
+
+    route = engine.calculate_accessible_route(
+        source, destination, MobilityProfile.WHEELCHAIR
+    )
+
+    assert route is not None
+    assert route.is_valid is True
+    assert route.path_node_ids[0] == source
+    assert route.path_node_ids[-1] == destination
+
