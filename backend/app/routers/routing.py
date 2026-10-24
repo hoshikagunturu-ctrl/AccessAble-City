@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, Query
-from typing import Optional
 
 from backend.app.models.routing import (
     RouteRequest,
@@ -12,13 +11,33 @@ from backend.app.sample_network import get_sample_network
 router = APIRouter(prefix="/routing", tags=["Routing"])
 
 
-@router.get("/network")
+@router.get(
+    "/network",
+    summary="Get the pedestrian network",
+    description=(
+        "Returns the pedestrian graph, including nodes, edges, "
+        "and metadata used for route planning."
+    ),
+)
 def get_network():
     """Return the complete pedestrian graph (nodes, edges, metadata)."""
     return get_sample_network()
 
 
-@router.post("/plan", response_model=RouteComparisonResponse)
+@router.post(
+    "/plan",
+    response_model=RouteComparisonResponse,
+    summary="Compare pedestrian routes",
+    description=(
+        "Compares the shortest unconstrained route with the "
+        "accessibility-aware route for the requested source, "
+        "destination, and mobility profile."
+    ),
+    responses={
+        400: {"description": "Invalid route request"},
+        500: {"description": "Internal routing error"},
+    },
+)
 def plan_route(request: RouteRequest):
     """
     Calculate and compare the shortest unconstrained route with the
@@ -53,19 +72,28 @@ def plan_route(request: RouteRequest):
         ) from None
 
 
-@router.get("/demo", response_model=RouteComparisonResponse)
+@router.get(
+    "/demo",
+    response_model=RouteComparisonResponse,
+    summary="Run the sample route demonstration",
+    description=(
+        "Compares routes from the Civic Plaza Transit Hub to the "
+        "Public Library using the selected mobility profile. "
+        "Defaults to the wheelchair mobility profile."
+    ),
+    responses={
+        400: {"description": "Unable to calculate the demo route"},
+        500: {"description": "Internal routing error"},
+    },
+)
 def get_one_click_demo(
     profile: MobilityProfile = Query(
         default=MobilityProfile.WHEELCHAIR
     ),
 ):
     """
-    One-click hackathon demonstration.
-
-    Evaluates the Civic Plaza Transit Hub to Public Library route
-    under the specified mobility profile. The sample scenario
-    demonstrates the standard route via the Grand Stairs and the
-    accessibility-aware route via the ADA switchback ramp.
+    Run the predefined demonstration route between the transit hub
+    and public library.
     """
     try:
         return routing_engine.compare_routes(
