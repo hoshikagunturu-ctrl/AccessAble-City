@@ -1,0 +1,177 @@
+# AccessAble City ♿🚶‍♂️🏙️
+> **AI-Powered Accessibility Intelligence for Inclusive Urban Mobility**  
+> *Tagline:* **Every Street. Every Step. Everyone.**  
+> *Hackathon:* **Innovators Conclave 2026** — *Smart Cities & CivilTech (Open Innovation)*
+
+---
+
+## 1. Problem Statement
+Wheelchair users, citizens with limited mobility, elderly pedestrians, and caregivers face severe daily navigation hazards: inaccessible footpaths, missing or unramped stairs, absent curb cuts, pavement heaving, and temporary construction blockades. 
+
+Conventional navigation platforms optimize strictly for **shortest distance** or **travel time**, often directing pedestrians into insurmountable barriers (such as flights of stairs or uncurbed road crossings).
+
+**AccessAble City** provides an accessibility-first navigation and intelligence engine that:
+1. Calculates continuous barrier-free pedestrian routes tailored to mobility profiles.
+2. Identifies and strictly avoids physical obstructions (stairs, steep inclines >8%, missing curb cuts, narrow bottlenecks).
+3. Directly contrasts standard shortest routes against accessibility-aware alternatives with algorithmic decision explanations.
+4. Integrates community reporting and AI multimodal image inspection for sidewalk obstacles.
+
+---
+
+## 2. Implemented & Verified Core Features
+
+- ✅ **Interactive Leaflet & OpenStreetMap Pedestrian GIS:** High-resolution map with custom vector markers for origins, destinations, verified accessible paths, and known physical barriers.
+- ✅ **NetworkX Multi-Criteria Routing Engine:** Profile-specific Dijkstra routing with strict barrier exclusions and documented 1.6x caution penalties for unverified paths.
+- ✅ **Mobility Profile Customization:**
+  - **Wheelchair / Powerchair:** Strict zero-stairs requirement, dropped curb cut enforcement, max 8.3% ramp slope, min 0.9m passage width.
+  - **Walker / Cane / Crutches:** Fall-prevention routing, low-step filtering (max 3 steps), avoidance of rough cobblestones/gravel.
+  - **Stroller & Senior Transit:** Gentle grade prioritization, step avoidance, resting corridor preference.
+  - **Standard Pedestrian:** Direct distance baseline for comparative benchmarking.
+- ✅ **1-Click Hackathon Benchmark Scenario:** Instant one-click demonstration comparing the direct path (blocked by an **18-step concrete flight of stairs**) against the **ADA Switchback Ramp (4.2% grade)** alternative (+80m, barrier-free).
+- ✅ **Algorithmic Decision Explanations:** Explains exactly why a route was selected and which barriers were avoided.
+- ✅ **Turn-by-Turn Waypoint Breakdown:** Segment-by-segment surface, slope, width, and curb cut details.
+- ✅ **Community Barrier Registry (SQLite & SQLAlchemy):** Full CRUD persistence with category filtering, upvoting, and verification lifecycle (`community_reported`, `verified_barrier`, `ai_suggested`, `resolved`).
+- ✅ **AI Vision Barrier Scanner:** Sidewalk image analysis with Google Gemini multimodal inspection and deterministic offline fallback.
+- ✅ **100% Offline / Zero-Key Fallback:** Complete core application functions locally without requiring external API keys.
+
+---
+
+## 3. Technology Stack
+
+| Layer | Technologies |
+|---|---|
+| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons |
+| **Interactive Map** | Leaflet 1.9, React-Leaflet 5, OpenStreetMap Cartography |
+| **Backend API** | Python 3.13, FastAPI, Uvicorn, Pydantic v2 |
+| **Graph Routing** | NetworkX (DiGraph, Dijkstra multi-criteria traversal) |
+| **Persistence** | SQLite, SQLAlchemy 2.0 ORM |
+| **AI Vision** | Google Gemini 2.5 Flash with structured fallback |
+| **Testing** | Pytest, FastAPI TestClient, Vitest/TSC |
+
+---
+
+## 4. Quickstart: Run Locally
+
+### Prerequisites
+- Python 3.10+
+- Node.js 18+ and npm
+
+### 1. Start the Backend API
+```bash
+# Navigate to backend and create virtual environment
+python -m venv backend/venv
+
+# Activate virtual environment
+# Windows:
+.\backend\venv\Scripts\activate
+# Linux/macOS:
+source backend/venv/bin/activate
+
+# Install dependencies
+pip install -r backend/requirements.txt
+
+# Run backend server (starts on http://localhost:8000)
+python backend/run.py
+```
+*API interactive documentation will be live at: [http://localhost:8000/docs](http://localhost:8000/docs)*
+
+### 2. Start the Frontend Dashboard
+Open a second terminal window:
+```bash
+# Navigate to frontend
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start Vite development server
+npm run dev
+```
+*Open your browser to: [http://localhost:5173](http://localhost:5173)*
+
+---
+
+## 5. Automated Test Suite & Verification Results
+
+Run backend automated verification:
+```bash
+.\backend\venv\Scripts\pytest -v
+```
+
+### Verified Test Results (14/14 Passed)
+```
+backend/tests/test_api.py::test_health_endpoint PASSED                   [  7%]
+backend/tests/test_api.py::test_root_endpoint PASSED                     [ 14%]
+backend/tests/test_api.py::test_get_network PASSED                       [ 21%]
+backend/tests/test_api.py::test_demo_route PASSED                        [ 28%]
+backend/tests/test_api.py::test_plan_route PASSED                        [ 35%]
+backend/tests/test_api.py::test_plan_route_invalid_node PASSED           [ 42%]
+backend/tests/test_barriers.py::test_get_barriers PASSED                 [ 50%]
+backend/tests/test_barriers.py::test_create_barrier_report PASSED        [ 57%]
+backend/tests/test_barriers.py::test_vision_status_and_analyze PASSED    [ 64%]
+backend/tests/test_routing.py::test_shortest_route_uses_inaccessible_stairs PASSED [ 71%]
+backend/tests/test_routing.py::test_wheelchair_route_strictly_excludes_inaccessible_stairs PASSED [ 78%]
+backend/tests/test_routing.py::test_route_comparison_difference_and_explanations PASSED [ 85%]
+backend/tests/test_routing.py::test_unknown_path_penalized PASSED        [ 92%]
+backend/tests/test_routing.py::test_no_valid_route_handling PASSED       [100%]
+
+======================== 14 passed in 1.20s ========================
+```
+- **Shortest Route Verification:** Proves the unconstrained shortest route traverses `edge_grand_stairs` (18 steps).
+- **Wheelchair Exclusion Verification:** Proves the wheelchair route strictly rejects `edge_grand_stairs` and routes via the ADA switchback ramp.
+- **Frontend Production Build:** `tsc -b && vite build` succeeded in 1.61s with 0 errors.
+
+---
+
+## 6. Live API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/health` | Backend health check |
+| `GET` | `/api/routing/network` | Full pedestrian graph (nodes, edges, geometries) |
+| `GET` | `/api/routing/demo` | Benchmark comparison (Transit Hub to Library) |
+| `POST` | `/api/routing/plan` | Dynamic route planning with profile constraints |
+| `GET` | `/api/barriers` | List community and verified barrier reports |
+| `POST` | `/api/barriers` | Submit new barrier report |
+| `POST` | `/api/barriers/{id}/upvote` | Upvote a barrier for municipal prioritization |
+| `PATCH` | `/api/barriers/{id}/status` | Update verification status (`verified_barrier`, `resolved`) |
+| `GET` | `/api/vision/status` | Check Gemini API connection status |
+| `POST` | `/api/vision/analyze` | Multimodal AI image barrier detection |
+
+---
+
+## 7. 2-Minute Judging Demonstration Script
+
+1. **Open the Dashboard (`http://localhost:5173`)**: Point out the map of the Civic Center Innovation District with visible pathways, green origins, and red barrier markers.
+2. **Click "Launch 1-Click Demo"**:
+   - Observe the dual route visualization.
+   - The **dashed red line** displays the standard shortest route (250m) directly encountering the **18-step concrete Grand Stairs** (impassable for wheeled mobility).
+   - The **solid green line** displays AccessAble City's route (330m) safely diverting through the **ADA switchback ramp (4.2% slope)**.
+3. **Inspect Decision Justification**: Point out the automatically generated text: *"The standard shortest route contains insurmountable barriers for wheelchair: 1 flight(s) of stairs... AccessAble City routed via the verified accessible corridor featuring ADA ramps and dropped curb ramps."*
+4. **Switch Mobility Profiles**: Select **Walker / Cane** or **Standard Pedestrian** to watch the routing engine dynamically re-evaluate edge costs.
+5. **Demonstrate AI Image Scanner**:
+   - Navigate to the **AI Vision Scanner** tab.
+   - Click a demo preset (e.g. *Grand Flight of Stairs* or *Missing Dropped Curb Cut*).
+   - Click **Run Multimodal Accessibility Analysis** to display structured feature detection and impact analysis.
+   - Note the human-verification safety disclaimer.
+   - Click **Pin as Map Barrier Report** to add it to the live database.
+
+---
+
+## 8. Honest Limitations & Roadmap
+
+- **Graph Coverage:** Currently operates on a benchmark sample network in the Civic Center district; next phase integrates real-time OpenStreetMap Overpass API queries.
+- **Real-Time Obstructions:** Weather and transient vehicular blockages rely on crowd reports; future iterations will ingest smart city sensor feeds.
+- **Elevator Telemetry:** Station elevator outages currently rely on user reports rather than live transit agency GTFS-RT APIs.
+
+---
+
+## 9. Team Structure (Innovators Conclave 2026)
+
+The project architecture is partitioned into 6 distinct modules to enable independent contributions by all six team members:
+1. **Routing Algorithms & NetworkX Graph Engine:** Pedestrian graph formulation, Dijkstra constraints, penalty weights.
+2. **AI Multimodal Vision Service:** Gemini API integration, prompt engineering, structured schemas.
+3. **Frontend Dashboard & Accessibility UX:** React, Tailwind v4, WCAG contrast compliance, responsive design.
+4. **GIS & Geospatial Visualization:** Leaflet mapping, polyline geometry rendering, custom map icons.
+5. **Backend REST API & Persistence:** FastAPI routes, SQLite database, barrier report lifecycle.
+6. **QA, Testing & Deployment:** Pytest test suites, GitHub Actions, Docker & Vercel deployment.
