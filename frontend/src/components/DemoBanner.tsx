@@ -40,7 +40,7 @@ export const DemoBanner: React.FC<DemoBannerProps> = ({ onRunDemo, isLoading }) 
           <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] text-slate-400">
             <span className="flex items-center space-x-1">
               <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
-              <span className="text-slate-300 font-medium">100% Zero-Step Ramp Guarantee</span>
+              <span className="text-slate-300 font-medium">Ramp Alternative (Avoids Stairs)</span>
             </span>
             <span className="flex items-center space-x-1">
               <CornerDownRight className="w-3.5 h-3.5 text-cyan-400" />

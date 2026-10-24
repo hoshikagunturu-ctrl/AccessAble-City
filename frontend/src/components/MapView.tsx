@@ -283,7 +283,7 @@ export const MapView: React.FC<MapViewProps> = ({
                     <strong>{accessibleRoute.estimated_time_formatted}</strong>
                   </p>
                   <div className="p-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-800 text-[11px] leading-snug">
-                    ✓ <strong>100% Barrier-Free:</strong> Rerouted via ADA Switchback Ramp (4.2% grade, continuous handrails).
+                    ✓ <strong>Accessible Alternative:</strong> Rerouted via ADA Switchback Ramp (4.2% grade, continuous handrails).
                   </div>
                 </div>
               </Popup>

@@ -297,7 +297,7 @@ class AccessibilityRoutingEngine:
             summary_verdict = (
                 f"Accessible route safely bypasses critical barriers "
                 f"(+{dist_delta}m / +{round(time_delta/60, 1)} min)."
-                if dist_delta > 0 else "Shortest route is already 100% accessible!"
+                if dist_delta > 0 else "Shortest route already satisfies profile constraints!"
             )
 
             why_accessible = (

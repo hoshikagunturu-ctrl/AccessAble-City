@@ -16,7 +16,7 @@ export const AboutView: React.FC = () => {
         <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
           <strong>Every Street. Every Step. Everyone.</strong> An accessibility-first urban mobility engine
           combining NetworkX multi-criteria graph routing, Gemini multimodal vision inspection, and
-          crowdsourced civic validation to deliver safe, barrier-free pedestrian navigation.
+          crowdsourced civic validation to deliver more accessible pedestrian navigation.
         </p>
       </div>
 
