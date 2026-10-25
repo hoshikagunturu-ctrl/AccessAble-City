@@ -1,3 +1,4 @@
+
 import type {
   RouteComparisonResponse,
   BarrierReport,
@@ -8,7 +9,10 @@ import type {
   VerificationStatus
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = `${(
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://accessable-city-backend.onrender.com'
+).replace(/\/+$/, '')}/api`;
 
 export const api = {
   async getNetwork(): Promise<{
@@ -49,20 +53,29 @@ export const api = {
     return res.json();
   },
 
-  async getOneClickDemo(profile: MobilityProfile = 'wheelchair'): Promise<RouteComparisonResponse> {
-    const res = await fetch(`${API_BASE_URL}/routing/demo?profile=${profile}`);
+  async getOneClickDemo(
+    profile: MobilityProfile = 'wheelchair'
+  ): Promise<RouteComparisonResponse> {
+    const res = await fetch(
+      `${API_BASE_URL}/routing/demo?profile=${encodeURIComponent(profile)}`
+    );
     if (!res.ok) {
       throw new Error(`Failed to load demo route: ${res.statusText}`);
     }
     return res.json();
   },
 
-  async getBarriers(status?: string, category?: string): Promise<BarrierReport[]> {
+  async getBarriers(
+    status?: string,
+    category?: string
+  ): Promise<BarrierReport[]> {
     const params = new URLSearchParams();
     if (status) params.append('status', status);
     if (category) params.append('category', category);
+
     const query = params.toString() ? `?${params.toString()}` : '';
     const res = await fetch(`${API_BASE_URL}/barriers${query}`);
+
     if (!res.ok) {
       throw new Error(`Failed to fetch barriers: ${res.statusText}`);
     }
@@ -91,7 +104,10 @@ export const api = {
     return res.json();
   },
 
-  async updateBarrierStatus(id: number, status: VerificationStatus): Promise<BarrierReport> {
+  async updateBarrierStatus(
+    id: number,
+    status: VerificationStatus
+  ): Promise<BarrierReport> {
     const res = await fetch(`${API_BASE_URL}/barriers/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -116,6 +132,7 @@ export const api = {
   async analyzeImage(file: File): Promise<VisionAnalysisResult> {
     const formData = new FormData();
     formData.append('file', file);
+
     const res = await fetch(`${API_BASE_URL}/vision/analyze`, {
       method: 'POST',
       body: formData
@@ -134,6 +151,7 @@ export const api = {
     human_verification_required: boolean;
   }> {
     const res = await fetch(`${API_BASE_URL}/vision/status`);
+
     if (!res.ok) {
       return {
         gemini_configured: false,
